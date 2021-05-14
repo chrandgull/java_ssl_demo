@@ -8,6 +8,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.entity.StringEntity;
@@ -21,52 +22,44 @@ import org.apache.http.util.EntityUtils;
 public class Postit {
 	
 	public void mymethod() throws ClientProtocolException, IOException {
-		DefaultHttpClient httpClient = new DefaultHttpClient();
-	     
+	      //Creating an HttpHost object for proxy
+	      HttpHost proxyhost = new HttpHost("localhost",8008);
 
-	        //Creating an HttpHost object for proxy
-	        HttpHost proxyhost = new HttpHost("127.0.0.1",8008);
+	      //Creating an HttpHost object for target
+	      HttpHost targethost = new HttpHost("ptsv2.com");
+	 
+	      //creating a RoutePlanner object
+	      HttpRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyhost);
 
-	        //Creating an HttpHost object for target
-	        HttpHost targethost = new HttpHost("google.com");
-	   
-	        //creating a RoutePlanner object
-	        HttpRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxyhost);
+	      //Setting the route planner to the HttpClientBuilder object
+	      HttpClientBuilder clientBuilder = HttpClients.custom();
+	      clientBuilder = clientBuilder.setRoutePlanner(routePlanner);
 
-	        //Setting the route planner to the HttpClientBuilder object
-	        HttpClientBuilder clientBuilder = HttpClients.custom();
-	        clientBuilder = clientBuilder.setRoutePlanner(routePlanner);
+	      //Building a CloseableHttpClient
+	      CloseableHttpClient httpclient = clientBuilder.build();
 
-	        //Building a CloseableHttpClient
-	        CloseableHttpClient httpclient = clientBuilder.build();
-	        
-	        HttpPost postRequest = new HttpPost("http://ptsv2.com/t/5ldkf-1620949253/post");
-	        
-	        
-	        //Set the request post body
-	        StringEntity userEntity = new StringEntity("test=myvar");
-	        postRequest.setEntity(userEntity);
-	        postRequest.setHeader("Content-Type", "application/x-www-form-urlencoded");
-	          
-	        //Send the request; It will immediately return the response in HttpResponse object if any
-	        HttpResponse httpresponse = httpClient.execute(postRequest);
+	      //Creating an HttpGet object
+	      HttpPost httpPost = new HttpPost("/t/5ldkf-1620949253/post");
 
-	        //Printing the status line
-	        System.out.println(httpresponse.getStatusLine());
+	      //Executing the Get request
+	      HttpResponse httpresponse = httpclient.execute(targethost, httpPost);
 
-	        //Printing all the headers of the response
-	        Header[] headers = httpresponse.getAllHeaders();
-	   
-	        for (int i = 0; i < headers.length; i++) {
-	           System.out.println(headers[i]);
-	        }
-	        
-	        //Printing the body of the response
-	        HttpEntity entity = httpresponse.getEntity();
+	      //Printing the status line
+	      System.out.println(httpresponse.getStatusLine());
 
-	        if (entity != null) {
-	           System.out.println(EntityUtils.toString(entity));
-	        }
-	}	   
+	      //Printing all the headers of the response
+	      Header[] headers = httpresponse.getAllHeaders();
+	 
+	      for (int i = 0; i < headers.length; i++) {
+	         System.out.println(headers[i]);
+	      }
+	      
+	      //Printing the body of the response
+	      HttpEntity entity = httpresponse.getEntity();
+
+	      if (entity != null) {
+	         System.out.println(EntityUtils.toString(entity));
+	      }
+	   }	   
 
 }
